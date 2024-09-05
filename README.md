@@ -11,7 +11,7 @@ This project focuses on applying transformer-based models (e.g., BERT, RoBERTa, 
 The datasets used in this project include a combination of SemEval, MAMS, and Hu and Liu customer reviews, along with an additional test dataset from Naver Labs Europe.
 
 ### Block Diagram of the Framework
-![diagram](https://github.com/user-attachments/assets/e6447b54-130a-4d1e-b4a4-2efd83b8f86a)
+![Block_Diagram](https://github.com/user-attachments/assets/a0d277a9-ef95-4b8e-a108-045058da8e7c)
 
 The above diagram illustrates the overall workflow of our Aspect-Based Sentiment Analysis (ABSA) frame-work. The process begins with data collection, where reviews containing labeled aspects and their corresponding sentiment polarities are gathered. Then we create a labeled dataset and fine-tune pre-trained transformer models (such as BERT and RoBERTa) on this data. After fine-tuning, we evaluate the models using performance metrics (e.g., accuracy, F1 score) and select the best-performing model. Finally, explainability techniques (LIME, SHAP, Attention Weights Visualization, Integrated Gradients, Grad-CAM) are applied to the selected model to provide insights into how the model makes predictions at the aspect level. This diagram provides a visual guide to the methodological steps outlined in this section, from data preparation to explainability analysis.
 
