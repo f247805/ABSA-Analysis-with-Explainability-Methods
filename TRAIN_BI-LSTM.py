@@ -135,7 +135,6 @@ dropout = 0.3
 model = BiLSTM(len(vocab), embedding_dim, hidden_dim, output_dim, n_layers, dropout)
 
 # Step 4: Train the BiLSTM Model
-
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 criterion = nn.CrossEntropyLoss()
 
@@ -178,6 +177,8 @@ def evaluate(model, iterator, criterion):
     model.eval()
     epoch_loss = 0
     epoch_acc = 0
+    all_labels = []
+    all_preds = []
 
     with torch.no_grad():
         for batch in iterator:
@@ -195,22 +196,32 @@ def evaluate(model, iterator, criterion):
             epoch_loss += loss.item()
             epoch_acc += acc.item()
 
-    return epoch_loss / len(iterator), epoch_acc / len(iterator)
+            # Store the true labels and predicted labels
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(predictions.argmax(dim=1).cpu().numpy())
 
-n_epochs = 10
+    # Return loss, accuracy, and the labels for further evaluation
+    return epoch_loss / len(iterator), epoch_acc / len(iterator), all_labels, all_preds
+
+n_epochs = 1
 
 for epoch in range(n_epochs):
     print(f"\nEpoch {epoch + 1}/{n_epochs}")
     train_loss, train_acc = train(model, train_loader, optimizer, criterion)
-    val_loss, val_acc = evaluate(model, val_loader, criterion)
+    val_loss, val_acc = evaluate(model, val_loader, criterion)[:2]
     print(f'Train Loss: {train_loss:.3f} | Train Acc: {train_acc * 100:.2f}%')
     print(f'Val. Loss: {val_loss:.3f} | Val. Acc: {val_acc * 100:.2f}%')
 
 # Step 5: Evaluate the Model on the Test Set
 
 print("\nEvaluating on Test Set...")
-test_loss, test_acc = evaluate(model, test_loader, criterion)
+test_loss, test_acc, true_labels_test, predicted_labels_test = evaluate(model, test_loader, criterion)
 print(f'Test Loss: {test_loss:.3f} | Test Acc: {test_acc * 100:.2f}%')
+
+# Step 6: Compute Macro Precision, Recall, F1-Score
+precision, recall, f1_score, support = precision_recall_fscore_support(true_labels_test, predicted_labels_test, average='macro')
+
+print(f"Macro Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1_score:.4f}")
 
 # Save the model and vocabulary
 torch.save(model.state_dict(), 'bilstm_baseline_model.pth')
