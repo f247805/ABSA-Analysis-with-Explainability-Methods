@@ -96,7 +96,7 @@ To run your own experiments, follow these steps:
 
 - Prepare the Dataset: Use either the provided `FINAL_CLEANED_CORRECTED_SHUFFLED_DATASET_NO_DUPLICATE.jsonl` or another dataset structured similarly (with text and aspect labels).
 
-- Choose Your Model: In `FINE_TUNE.py`, select the model you wish to fine-tune by setting the `AutoTokenizer` and `AutoModelForSequenceClassification`. For the Bi-LSTM model, use the `TRAIN_BI-LSTM.py` script.
+- Choose Your Model: In `FINE_TUNE.py`, select the model you wish to fine-tune by setting the `AutoTokenizer` and `AutoModelForSequenceClassification`. For the Bi-LSTM model, use the `TRAIN_BI-LSTM.py` script. For the LSTM model, use the `TRAIN_LSTM.py` script. For the RNN model, use the `TRAIN_RNN.py` script.
 
 - Adjust Hyperparameters: Modify the learning rate, batch size, and number of epochs in the respective scripts to suit your experiment.
 
@@ -104,4 +104,4 @@ To run your own experiments, follow these steps:
 
 Conclusion
 
-This repository provides all the necessary tools for fine-tuning transformer models and training Bi-LSTM for ABSA, along with methods to interpret model decisions. Feel free to experiment with different models, datasets, and hyperparameters, and leverage the explainability techniques to gain deeper insights into the models' decision-making processes.
+This repository provides all the necessary tools for fine-tuning transformer models and training Bi-LSTM, LSTM, RNN for ABSA, along with methods to interpret model decisions. Feel free to experiment with different models, datasets, and hyperparameters, and leverage the explainability techniques to gain deeper insights into the models' decision-making processes.
