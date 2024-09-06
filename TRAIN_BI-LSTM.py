@@ -3,14 +3,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, ConfusionMatrixDisplay
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 import jsonlines
 import numpy as np
-import matplotlib.pyplot as plt
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
-from collections import Counter
 import re
+from collections import Counter
 import pickle
+from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 
 # Step 1: Load and Prepare the Dataset
 file_path = 'FINAL_CLEANED_CORRECTED_SHUFFLED_DATASET_NO_DUPLICATE.jsonl'
@@ -70,6 +69,7 @@ def pad_and_tensorize(encoded_sentences, max_len):
 def prepare_data(sentences, aspect_polarities, vocab, max_len):
     tokenized_data = []
     labels = []
+    text_lengths = []  # Store lengths of sequences before padding
 
     for sentence, aspect_polarity in zip(sentences, aspect_polarities):
         aspects = aspect_polarity['aspects']
@@ -78,6 +78,7 @@ def prepare_data(sentences, aspect_polarities, vocab, max_len):
         for aspect, polarity in zip(aspects, polarities):
             input_text = f"{sentence} [SEP] {aspect}"
             encoded_sentence = encode_sentence(input_text, vocab)
+            text_lengths.append(min(len(encoded_sentence), max_len))  # Get length before padding
             tokenized_data.append(encoded_sentence)
 
             label_map = {'negative': 0, 'neutral': 1, 'positive': 2}
@@ -88,20 +89,20 @@ def prepare_data(sentences, aspect_polarities, vocab, max_len):
     inputs_tensor = pad_and_tensorize(tokenized_data, max_len)
     labels_tensor = torch.tensor(labels)
 
-    return inputs_tensor, labels_tensor
+    return inputs_tensor, labels_tensor, torch.tensor(text_lengths)
 
 # Maximum sequence length
 max_len = 50
 
 # Prepare the datasets
-train_inputs, train_labels = prepare_data(sentences_train, aspect_polarities_train, vocab, max_len)
-val_inputs, val_labels = prepare_data(sentences_val, aspect_polarities_val, vocab, max_len)
-test_inputs, test_labels = prepare_data(sentences_test, aspect_polarities_test, vocab, max_len)
+train_inputs, train_labels, train_lengths = prepare_data(sentences_train, aspect_polarities_train, vocab, max_len)
+val_inputs, val_labels, val_lengths = prepare_data(sentences_val, aspect_polarities_val, vocab, max_len)
+test_inputs, test_labels, test_lengths = prepare_data(sentences_test, aspect_polarities_test, vocab, max_len)
 
-# Create DataLoaders
-train_dataset = TensorDataset(train_inputs, train_labels)
-val_dataset = TensorDataset(val_inputs, val_labels)
-test_dataset = TensorDataset(test_inputs, test_labels)
+# Create DataLoaders (with lengths)
+train_dataset = TensorDataset(train_inputs, train_labels, train_lengths)
+val_dataset = TensorDataset(val_inputs, val_labels, val_lengths)
+test_dataset = TensorDataset(test_inputs, test_labels, test_lengths)
 
 train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=8, shuffle=False)
@@ -119,7 +120,7 @@ class BiLSTM(nn.Module):
 
     def forward(self, text, text_lengths):
         embedded = self.dropout(self.embedding(text))
-        packed_embedded = pack_padded_sequence(embedded, text_lengths, batch_first=True, enforce_sorted=False)
+        packed_embedded = pack_padded_sequence(embedded, text_lengths.cpu(), batch_first=True, enforce_sorted=False)  # Ensure lengths are on CPU
         packed_output, (hidden, cell) = self.lstm(packed_embedded)
         output, output_lengths = pad_packed_sequence(packed_output, batch_first=True)
         hidden = self.dropout(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))
@@ -149,16 +150,14 @@ def train(model, iterator, optimizer, criterion):
     epoch_acc = 0
 
     for batch_idx, batch in enumerate(iterator, 1):
-        text, labels = batch
+        text, labels, lengths = batch
         text = text.to(device)
         labels = labels.to(device)
+        lengths = lengths.to(device)
 
         optimizer.zero_grad()
 
-        # Compute text lengths and move to CPU as int64
-        text_lengths = torch.tensor([min(len(sentence), max_len) for sentence in text], dtype=torch.int64).cpu()
-
-        predictions = model(text, text_lengths).squeeze(1)
+        predictions = model(text, lengths).squeeze(1)
         loss = criterion(predictions, labels)
         acc = (predictions.argmax(dim=1) == labels).float().mean()
 
@@ -182,13 +181,12 @@ def evaluate(model, iterator, criterion):
 
     with torch.no_grad():
         for batch in iterator:
-            text, labels = batch
+            text, labels, lengths = batch
             text = text.to(device)
             labels = labels.to(device)
+            lengths = lengths.to(device)
 
-            text_lengths = torch.tensor([min(len(sentence), max_len) for sentence in text], dtype=torch.int64).cpu()
-
-            predictions = model(text, text_lengths).squeeze(1)
+            predictions = model(text, lengths).squeeze(1)
 
             loss = criterion(predictions, labels)
             acc = (predictions.argmax(dim=1) == labels).float().mean()
@@ -200,7 +198,6 @@ def evaluate(model, iterator, criterion):
             all_labels.extend(labels.cpu().numpy())
             all_preds.extend(predictions.argmax(dim=1).cpu().numpy())
 
-    # Return loss, accuracy, and the labels for further evaluation
     return epoch_loss / len(iterator), epoch_acc / len(iterator), all_labels, all_preds
 
 n_epochs = 10
@@ -218,10 +215,12 @@ print("\nEvaluating on Test Set...")
 test_loss, test_acc, true_labels_test, predicted_labels_test = evaluate(model, test_loader, criterion)
 print(f'Test Loss: {test_loss:.3f} | Test Acc: {test_acc * 100:.2f}%')
 
-# Step 6: Compute Macro Precision, Recall, F1-Score
+# Step 6: Compute Macro Precision, Recall, F1-Score, and Accuracy
 precision, recall, f1_score, support = precision_recall_fscore_support(true_labels_test, predicted_labels_test, average='macro')
+accuracy = accuracy_score(true_labels_test, predicted_labels_test)
 
 print(f"Macro Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1_score:.4f}")
+print(f"Test Accuracy: {accuracy * 100:.2f}%")
 
 # Save the model and vocabulary
 torch.save(model.state_dict(), 'bilstm_baseline_model.pth')
