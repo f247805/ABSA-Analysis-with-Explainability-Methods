@@ -1,6 +1,6 @@
 # Explainable Aspect-Based Sentiment Analysis using Transformer Models 
 
-## (Transformer and not transformer Models for Aspect-Based Sentiment Analysis (ABSA))
+## (Transformer and Not Transformer Models for Aspect-Based Sentiment Analysis (ABSA))
 
 This repository contains the code and datasets used for fine-tuning transformer models and training Bi-LSTM for Aspect-Based Sentiment Analysis (ABSA). It also includes various explainability methods to interpret model predictions, such as LIME, SHAP, Integrated Gradients, and Grad-CAM.
 
