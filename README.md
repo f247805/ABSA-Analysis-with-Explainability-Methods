@@ -56,23 +56,37 @@ This script trains the Bi-LSTM model. Key configurations include:
 Hyperparameters: Adjust the learning rate (`lr`), batch size (`batch_size`), and number of epochs (`n_epochs`).
 The Bi-LSTM model uses the `[SEP]` separator, which has been added to its vocabulary.
 
-5. **LIME.py**
+5. **TRAIN_LSTM.py**
+
+This script trains the LSTM model. Key configurations include:
+
+Hyperparameters: Adjust the learning rate (`lr`), batch size (`batch_size`), and number of epochs (`n_epochs`).
+The LSTM model uses the `[SEP]` separator, which has been added to its vocabulary.
+
+6. **TRAIN_RNN.py**
+
+This script trains the RNN model. Key configurations include:
+
+Hyperparameters: Adjust the learning rate (`lr`), batch size (`batch_size`), and number of epochs (`n_epochs`).
+The RNN model uses the `[SEP]` separator, which has been added to its vocabulary.
+
+7. **LIME.py**
 
 This script implements the LIME (Local Interpretable Model-agnostic Explanations) method for explainability. You can load your fine-tuned transformer model using the `model_dir` or `model_path`, define the `tokenizer`, and test the explainability on custom input text and aspects. Make sure to use the appropriate separator for your model.
 
-6. **SHAP.py**
+8. **SHAP.py**
 
 This script implements SHAP (SHapley Additive exPlanations) to interpret the transformer models. Load the model and tokenizer, set the correct separator, and input the text and aspects for which you want to explain the sentiment predictions.
 
-7. **ATTENTION_WEIGHTS.py**
+9. **ATTENTION_WEIGHTS.py**
 
 This script calculates and visualizes attention weights to interpret model predictions. Similar to the other explainability scripts, load the model, tokenizer, and text input, ensuring the correct separator is used.
 
-8. **INTEGRATED_GRADIENTS.py**
+10. **INTEGRATED_GRADIENTS.py**
 
 This script applies the Integrated Gradients method for explaining the predictions of transformer models. After loading your fine-tuned model and tokenizer, and specifying the appropriate separator, you can input your text and aspect for analysis.
 
-9. **GRAD-CAM.py**
+11. **GRAD-CAM.py**
 
 This script implements GRAD-CAM (Gradient-weighted Class Activation Mapping) to visualize how specific parts of the text contribute to the model’s predictions. Make sure to load the transformer model, tokenizer, and set the correct separator.
 
