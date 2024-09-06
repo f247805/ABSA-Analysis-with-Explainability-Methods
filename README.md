@@ -1,4 +1,4 @@
-# Explainable Aspect-Based Sentiment Analysis using Trans-former Models 
+# Explainable Aspect-Based Sentiment Analysis using Transformer Models 
 
 ## (Transformer and Bi-LSTM Models for Aspect-Based Sentiment Analysis (ABSA))
 
