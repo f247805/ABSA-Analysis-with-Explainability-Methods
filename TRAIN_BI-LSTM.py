@@ -203,7 +203,7 @@ def evaluate(model, iterator, criterion):
     # Return loss, accuracy, and the labels for further evaluation
     return epoch_loss / len(iterator), epoch_acc / len(iterator), all_labels, all_preds
 
-n_epochs = 1
+n_epochs = 10
 
 for epoch in range(n_epochs):
     print(f"\nEpoch {epoch + 1}/{n_epochs}")
