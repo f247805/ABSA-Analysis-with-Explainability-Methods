@@ -146,7 +146,7 @@ def evaluate_gpt4_on_absa(test_set):
     print(f"F1-Score: {f1:.4f}")
 
 # Load the test dataset
-test_set_path = 'NAVER_LLM_TEST_SET.jsonl'  # Replace with the correct test set path
+test_set_path = 'NAVER_LLM_TEST_SET.jsonl' 
 test_set = load_test_set(test_set_path)
 
 # Evaluate GPT-4 performance on the test set
