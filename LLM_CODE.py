@@ -76,7 +76,7 @@ def get_aspect_sentiment(sentence, aspect):
     # Updated prompt with specific instructions for polarity options
     prompt = (f'In the following sentence: "{sentence}", '
               f'what is the sentiment towards the aspect "{aspect}"? '
-              f'Respond with one of the following: "positive", "neutral", or "negative".')
+              f'Respond with ONLY WORD one of the following: "positive", "neutral", or "negative".')
 
     try:
         # Use the chat completion API for GPT-4
